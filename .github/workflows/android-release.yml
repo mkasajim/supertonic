@@ -66,9 +66,10 @@ jobs:
           # Clone the Hugging Face repository with models
           git clone https://huggingface.co/Supertone/supertonic-2 hf-models
           
-          # Create assets directory and copy ONNX models
+          # Create assets directory and copy ONNX models + config files
           mkdir -p android/app/src/main/assets/onnx
           cp hf-models/onnx/*.onnx android/app/src/main/assets/onnx/
+          cp hf-models/onnx/*.json android/app/src/main/assets/onnx/
           
           # Copy voice styles if not already present
           mkdir -p android/app/src/main/assets/voice_styles

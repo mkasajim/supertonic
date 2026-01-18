@@ -24,7 +24,7 @@ pub extern "system" fn Java_com_brahmadeo_supertonic_tts_SupertonicTTS_init(
     mut env: JNIEnv,
     _class: JClass,
     model_path: JString,
-    _lib_path: JString, // Kept for signature compatibility
+    lib_path: JString,
 ) -> jlong {
     android_logger::init_once(
         Config::default().with_max_level(LevelFilter::Info),
@@ -36,11 +36,14 @@ pub extern "system" fn Java_com_brahmadeo_supertonic_tts_SupertonicTTS_init(
     }));
 
     let model_path: String = env.get_string(&model_path).expect("Couldn't get java string!").into();
+    let lib_path: String = env.get_string(&lib_path).expect("Couldn't get java string!").into();
     
     log::info!("Initializing Supertonic Engine with model path: {}", model_path);
+    log::info!("Using ORT library path: {}", lib_path);
 
-    if !ort::init().commit() {
-        log::error!("Failed to initialize ORT environment");
+    // Initialize ORT with the dynamic library path for Android
+    if !ort::init().with_dylib_path(&lib_path).commit() {
+        log::error!("Failed to initialize ORT environment with path: {}", lib_path);
         return 0;
     }
 

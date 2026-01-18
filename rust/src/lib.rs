@@ -39,8 +39,8 @@ pub extern "system" fn Java_com_brahmadeo_supertonic_tts_SupertonicTTS_init(
     
     log::info!("Initializing Supertonic Engine with model path: {}", model_path);
 
-    if let Err(e) = ort::init().commit() {
-        log::error!("Failed to initialize ORT environment: {:?}", e);
+    if !ort::init().commit() {
+        log::error!("Failed to initialize ORT environment");
         return 0;
     }
 

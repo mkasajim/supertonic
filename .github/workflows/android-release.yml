@@ -57,6 +57,29 @@ jobs:
           unzip -q onnxruntime-android.aar -d onnxruntime-android
           cp onnxruntime-android/jni/arm64-v8a/libonnxruntime.so android/app/src/main/jniLibs/arm64-v8a/
 
+      - name: Download ONNX models from Hugging Face
+        run: |
+          # Install Git LFS
+          sudo apt-get install -y git-lfs
+          git lfs install
+          
+          # Clone the Hugging Face repository with models
+          git clone https://huggingface.co/Supertone/supertonic-2 hf-models
+          
+          # Create assets directory and copy ONNX models
+          mkdir -p android/app/src/main/assets/onnx
+          cp hf-models/onnx/*.onnx android/app/src/main/assets/onnx/
+          
+          # Copy voice styles if not already present
+          mkdir -p android/app/src/main/assets/voice_styles
+          cp hf-models/voice_styles/*.json android/app/src/main/assets/voice_styles/ 2>/dev/null || true
+          
+          # Show what was downloaded
+          echo "=== ONNX Models ==="
+          ls -lh android/app/src/main/assets/onnx/
+          echo "=== Voice Styles ==="
+          ls -lh android/app/src/main/assets/voice_styles/
+
       - name: Build release APK
         working-directory: android
         run: |

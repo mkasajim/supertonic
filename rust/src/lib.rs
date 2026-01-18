@@ -45,8 +45,8 @@ pub extern "system" fn Java_com_brahmadeo_supertonic_tts_SupertonicTTS_init(
     std::env::set_var("ORT_DYLIB_PATH", &lib_path);
 
     // Initialize ORT environment
-    if let Err(e) = ort::init().commit() {
-        log::error!("Failed to initialize ORT environment: {:?}", e);
+    if !ort::init().commit() {
+        log::error!("Failed to initialize ORT environment");
         return 0;
     }
 

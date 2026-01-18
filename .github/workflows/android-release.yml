@@ -52,8 +52,8 @@ jobs:
       - name: Download ONNX Runtime (libonnxruntime.so)
         run: |
           mkdir -p android/app/src/main/jniLibs/arm64-v8a
-          # Download from Maven Central (more reliable than GitHub releases)
-          curl -L -o onnxruntime-android.aar "https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime-android/1.17.3/onnxruntime-android-1.17.3.aar"
+          # Download from Maven Central - must match ort crate version (2.0.0-rc.11 requires ORT 1.23.x)
+          curl -L -o onnxruntime-android.aar "https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime-android/1.23.0/onnxruntime-android-1.23.0.aar"
           unzip -q onnxruntime-android.aar -d onnxruntime-android
           cp onnxruntime-android/jni/arm64-v8a/libonnxruntime.so android/app/src/main/jniLibs/arm64-v8a/
 

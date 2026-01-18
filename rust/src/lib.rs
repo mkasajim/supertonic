@@ -41,9 +41,12 @@ pub extern "system" fn Java_com_brahmadeo_supertonic_tts_SupertonicTTS_init(
     log::info!("Initializing Supertonic Engine with model path: {}", model_path);
     log::info!("Using ORT library path: {}", lib_path);
 
-    // Initialize ORT with the dynamic library path for Android
-    if !ort::init().with_dylib_path(&lib_path).commit() {
-        log::error!("Failed to initialize ORT environment with path: {}", lib_path);
+    // Set the ORT_DYLIB_PATH environment variable for dynamic loading
+    std::env::set_var("ORT_DYLIB_PATH", &lib_path);
+
+    // Initialize ORT environment
+    if let Err(e) = ort::init().commit() {
+        log::error!("Failed to initialize ORT environment: {:?}", e);
         return 0;
     }
 

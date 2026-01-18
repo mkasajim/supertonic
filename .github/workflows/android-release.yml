@@ -1,0 +1,102 @@
+name: Build Android APK
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.9
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: |
+          sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools" "ndk;26.1.10909125"
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          target: aarch64-linux-android
+          override: true
+
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk
+
+      - name: Build native library (libsupertonic_tts.so)
+        working-directory: rust
+        run: |
+          cargo ndk -t arm64-v8a -o ../android/app/src/main/jniLibs build --release
+
+      - name: Download ONNX Runtime (libonnxruntime.so)
+        run: |
+          mkdir -p android/app/src/main/jniLibs/arm64-v8a
+          # Download from Maven Central - must match ort crate version (2.0.0-rc.11 requires ORT 1.23.x)
+          curl -L -o onnxruntime-android.aar "https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime-android/1.23.0/onnxruntime-android-1.23.0.aar"
+          unzip -q onnxruntime-android.aar -d onnxruntime-android
+          cp onnxruntime-android/jni/arm64-v8a/libonnxruntime.so android/app/src/main/jniLibs/arm64-v8a/
+
+      - name: Download ONNX models from Hugging Face
+        run: |
+          # Install Git LFS
+          sudo apt-get install -y git-lfs
+          git lfs install
+          
+          # Clone the Hugging Face repository with models
+          git clone https://huggingface.co/Supertone/supertonic-2 hf-models
+          
+          # Create assets directory and copy ONNX models + config files
+          mkdir -p android/app/src/main/assets/onnx
+          cp hf-models/onnx/*.onnx android/app/src/main/assets/onnx/
+          cp hf-models/onnx/*.json android/app/src/main/assets/onnx/
+          
+          # Copy voice styles if not already present
+          mkdir -p android/app/src/main/assets/voice_styles
+          cp hf-models/voice_styles/*.json android/app/src/main/assets/voice_styles/ 2>/dev/null || true
+          
+          # Show what was downloaded
+          echo "=== ONNX Models ==="
+          ls -lh android/app/src/main/assets/onnx/
+          echo "=== Voice Styles ==="
+          ls -lh android/app/src/main/assets/voice_styles/
+
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          gradle --no-daemon assembleDebug
+
+      - name: Compute release tag
+        id: tag
+        run: |
+          VERSION_NAME=$(grep -m1 'versionName' android/app/build.gradle | sed -E 's/.*versionName "([^"]+)".*/\1/')
+          TAG="android-v${VERSION_NAME}-${GITHUB_RUN_NUMBER}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Android APK ${{ steps.tag.outputs.tag }}
+          generate_release_notes: true
+          files: android/app/build/outputs/apk/debug/app-debug.apk

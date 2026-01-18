@@ -1,5 +1,4 @@
 use std::time::{Duration, Instant};
-use anyhow::Result;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum SocClass {

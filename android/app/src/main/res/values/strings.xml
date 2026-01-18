@@ -62,6 +62,19 @@
     <string name="import_no_changes">All terms already exist and are up to date.</string>
     <string name="export_chooser_title">Export Lexicon</string>
 
+    <!-- TTS Settings Activity -->
+    <string name="tts_settings_title">Supertonic TTS Settings</string>
+    <string name="current_voice_label">Current Voice</string>
+    <string name="current_language_label">Current Language</string>
+    <string name="current_quality_label">Current Quality</string>
+    <string name="open_app_button">Open Supertonic TTS</string>
+    <string name="quality_steps_fmt">%1$d steps</string>
+    <string name="language_english">English (US)</string>
+    <string name="language_korean">Korean</string>
+    <string name="language_spanish">Spanish</string>
+    <string name="language_portuguese">Portuguese</string>
+    <string name="language_french">French</string>
+
     <!-- Menus -->
     <string name="action_reset">Reset</string>
     <string name="action_saved">Saved Audio</string>

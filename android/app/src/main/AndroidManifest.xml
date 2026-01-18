@@ -51,6 +51,12 @@
             android:parentActivityName=".MainActivity"
             android:label="Pronunciation Dictionary" />
 
+        <activity
+            android:name=".TtsSettingsActivity"
+            android:exported="true"
+            android:label="@string/tts_settings_title"
+            android:parentActivityName=".MainActivity" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -73,6 +79,9 @@
                 <action android:name="android.intent.action.TTS_SERVICE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            <meta-data
+                android:name="android.speech.tts"
+                android:resource="@xml/tts_engine_config" />
         </service>
     </application>
 </manifest>
